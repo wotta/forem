@@ -354,7 +354,20 @@ export class Tags extends Component {
       }
       // updates searchResults array according to what is being typed by user
       // allows user to choose a tag when they've typed the partial or whole word
-      this.setState({ searchResults: response.result });
+      this.setState({
+        searchResults: response.result.filter((t) =>
+          // Even if we haven't confirmed a tag yet, it will be part of `selected`.
+          // This is why the following two previous attempts did not work:
+          // 1. `!this.selected.includes(t.name)` => If the input matches a tag
+          // we can no longer confirm this tag from the dropdown, see #14812.
+          // 2, ` t.name === query || !this.selected.includes(t.name),` => This
+          // is better but the tag will pop again in the dropdown when it matches
+          // a previously selected tag exactly because of the short-circuiting
+          // in boolean expressions.
+          (t.name === query && !this.selected.includes(t.name)) ||
+            !this.selected.includes(t.name),
+        ),
+      });
     });
   }
 
